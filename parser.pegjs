@@ -10,13 +10,13 @@ Sexp
 ;
 
 Atom 
-    = Symbol
-    / Number
+    = Number
     / Boolean
+    / Symbol
 ;
 
 Number
-    = [0-9]+(.[0-9]*)? { return parseFloat(text()); }
+    = [0-9]+([.][0-9]*)? { return parseFloat(text()); }
 ;
 
 Boolean
@@ -25,7 +25,7 @@ Boolean
 ;
 
 Symbol
-    = [^()\[\]"' ]+ { return text(); }
+    = [^0-9()\[\]"' ][^()\[\]"' ]* { return text(); }
 ;
 
 _ "whitespace"

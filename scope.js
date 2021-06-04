@@ -1,9 +1,11 @@
+"use strict";
+
 const { assert } = require("./util");
 
 class Scope {
-    constructor(outer = null) {
+    constructor(outer = null, init_map = new Map()) {
         this.outer = outer;
-        this.map = new Map();
+        this.map = init_map;
     }
 
     define_value(k, v) {
@@ -17,7 +19,6 @@ class Scope {
 
     get_value(k) {
         const v = this.map.get(k);
-        assert(v != untouchable);
         return v;
     }
 

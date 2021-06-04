@@ -3,7 +3,7 @@
 const { assert } = require("./util");
 const { caseOf } = require("matches");
 const V = require("./value");
-const { nil, cons, car, cdr, set_car, set_cdr } = V;
+const { nil, tru, fls, cons, car, cdr, set_car, set_cdr } = V;
 
 const desugar = (() => {
     const pass1 = obj => caseOf(obj, {
@@ -11,13 +11,13 @@ const desugar = (() => {
         '[...objs]': os => caseOf(os.map(pass1), {
             '["let*", bindings, ...body]': (bindings, body) => {
                 let cur = body;
-                for (let bind of bindings.reverse()) {
+                for (const bind of bindings.reverse()) {
                     cur = [["let", [bind], ...cur]];
                 }
                 return cur[0];
             },
             '["letrec", bindings, ...body]': (bindings, body) => {
-                return ["let", bindings.map(b => [b[0], "[unassigned]"]),
+                return ["let", bindings.map(b => [b[0], ["quote", V.untouchable.imm]]),
                     ...bindings.map(b => ["set!", b[0], b[1]]), ...body];
             },
             '["define", [name, ".", arg], ...body]': (name, arg, body) => {
@@ -25,6 +25,12 @@ const desugar = (() => {
             },
             '["define", [name, ...args], ...body]': (name, args, body) => {
                 return ["define", name, ["lambda", args, ...body]];
+            },
+            '["and", ...args]': args => {
+                return args.reduceRight((acc, v) => ["if", v, acc, false], true);
+            },
+            '["or", ...args]': args => {
+                return args.reduceRight((acc, v) => ["if", v, true, acc], false);
             },
             'other': o => o,
         }),
@@ -37,6 +43,9 @@ const desugar = (() => {
             '["let", bindings, ...body]': (bindings, body) => {
                 return [["lambda", bindings.map(b => b[0]), ...body],
                 ...bindings.map(b => b[1])];
+            },
+            '["if", pred, then, alter]': (pred, then, alter) => {
+                return ["cond", [pred, then], ["else", alter]];
             },
             'other': o => o,
         }),
@@ -61,7 +70,7 @@ const js2scm = obj => {
         assert(obj !== ".");
         return new V.Symbol(obj);
     } else if (typeof obj === "boolean" || obj instanceof Boolean) {
-        return new V.Boolean(obj);
+        return obj ? tru : fls;
     } else if (typeof obj == "number" || obj instanceof Number) {
         return new V.Number(obj);
     } else if (obj instanceof Array) {
