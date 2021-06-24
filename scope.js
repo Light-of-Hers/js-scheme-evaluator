@@ -9,11 +9,13 @@ class Scope {
     }
 
     define_value(k, v) {
-        assert(!this.map.has(k));
+        k = String(k);
+        assert(!this.map.has(k), `redefination of variable ${k}`);
         this.map.set(k, v);
     }
 
     set_value(k, v) {
+        k = String(k);
         this.map.set(k, v);
     }
 

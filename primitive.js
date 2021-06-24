@@ -7,31 +7,31 @@ const { assert } = require("./util");
 const { Scope } = require("./scope");
 
 const add_like_op = (op, init) => new V.Primitive(args => new V.Number(list_foldl((a, v) => {
-    assert(V.number_p(v));
+    assert(V.number_p(v), `expected a number, given ${v}`);
     return op(a, v.imm);
 }, init, args)));
 
 const sub_like_op = (op, init) => new V.Primitive(args => {
-    assert(!V.nil_p(args));
+    assert(!V.nil_p(args), `expected at least one argument`);
     const n = car(args);
-    assert(V.number_p(n));
+    assert(V.number_p(n), `expected a number, given ${n}`);
     if (V.nil_p(cdr(args))) {
         return new V.Number(op(init, n.imm));
     } else {
         return new V.Number(list_foldl((a, v) => {
-            assert(V.number_p(v));
+            assert(V.number_p(v), `expected a number, given ${v}`);
             return op(a, v.imm);
         }, n, cdr(args)));
     }
 });
 
 const rel_op = op => new V.Primitive(args => {
-    assert(!V.nil_p(args));
+    assert(!V.nil_p(args), `expected at least one argument`);
     let res = true;
     let prev = car(args);
-    assert(V.number_p(prev));
+    assert(V.number_p(prev), `expected a number, given ${prev}`);
     for (const cur of cdr(args)) {
-        assert(V.number_p(cur));
+        assert(V.number_p(cur), `expected a number, given ${cur}`);
         if (!op(prev.imm, cur.imm))
             res = false;
         prev = cur;
@@ -41,7 +41,7 @@ const rel_op = op => new V.Primitive(args => {
 
 const n_args_op = (n, op) => new V.Primitive(args => {
     args = [...args];
-    assert(args.length == n);
+    assert(args.length == n, `expected ${n} arguments, given ${args.length}`);
     return op(...args);
 });
 
@@ -71,8 +71,8 @@ const prims = {
     "apply": n_args_op(2, apply),
 };
 
-const init_scope = new Scope(null, new Map(Object.entries(prims)));
+const prim_scope = new Scope(null, new Map(Object.entries(prims)));
 
 module.exports = {
-    init_scope,
+    prim_scope,
 }

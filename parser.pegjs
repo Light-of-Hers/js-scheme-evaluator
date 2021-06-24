@@ -16,7 +16,7 @@ Atom
 ;
 
 Number
-    = [0-9]+([.][0-9]*)? { return parseFloat(text()); }
+    = [-]?[0-9]+([.][0-9]*)? { return parseFloat(text()); }
 ;
 
 Boolean
@@ -25,7 +25,7 @@ Boolean
 ;
 
 Symbol
-    = [^0-9()\[\]"' ][^()\[\]"' ]* { return text(); }
+    = [^0-9()\[\]"' \t\n\r;][^()\[\]"' \t\n\r;]* { return text(); }
 ;
 
 _ "whitespace"

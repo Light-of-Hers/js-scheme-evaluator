@@ -9,8 +9,8 @@ const { Scope } = require("./scope");
 const evaluate = (exp, scope) => {
     if (symbol_p(exp)) {
         const v = Scope.lookup(scope, exp.imm);
-        assert(v);
-        assert(!eq(v, untouchable));
+        assert(v !== undefined, `unknown variable ${exp}`);
+        assert(!eq(v, untouchable), `untouchable value`);
         return v;
     } else if (!pair_p(exp)) {
         return exp;
@@ -25,25 +25,25 @@ const evaluate = (exp, scope) => {
         } else if (eq(fst, K.define)) { // define
             const key = car(cdr(exp));
             const val = evaluate(car(cdr(cdr(exp))), scope);
-            assert(symbol_p(key));
-            scope.define_value(key.imm, val);
+            assert(symbol_p(key), `invalid syntax ${exp}`);
+            scope.define_value(key, val);
             return nil;
         } else if (eq(fst, K.set_star)) { // set!
             const key = car(cdr(exp));
             const val = evaluate(car(cdr(cdr(exp))), scope)
-            assert(symbol_p(key));
-            scope.set_value(key.imm, val);
+            assert(symbol_p(key), `invalid syntax ${exp}`);
+            scope.set_value(key, val);
             return nil;
         } else if (eq(fst, K.begin)) { // begin
             const body = cdr(exp);
             return eval_seq(body, scope);
-        } else if (eq(fst, K.cond)) {
+        } else if (eq(fst, K.cond)) { // cond
             let stmts = cdr(exp);
             while (!nil_p(stmts)) {
                 const stmt = car(stmts);
                 const pred = car(stmt), clause = car(cdr(stmt));
                 if (eq(pred, K.else)) {
-                    assert(nil_p(cdr(stmts)));
+                    assert(nil_p(cdr(stmts)), `invalid syntax ${exp}`);
                     return evaluate(clause, scope);
                 } else if (!eq(evaluate(pred, scope), fls)) {
                     return evaluate(clause, scope);
@@ -53,12 +53,12 @@ const evaluate = (exp, scope) => {
             return nil;
         } else { // apply
             const op = evaluate(fst, scope);
-            assert(procedure_p(op));
+            assert(procedure_p(op), `${op} is not a procedure`);
             const args = list_map(v => evaluate(v, scope), cdr(exp));
             return apply(op, args);
         }
     } else {
-        assert(false);
+        assert(false, `invalid syntax ${exp}`);
     }
 };
 
@@ -78,15 +78,15 @@ const apply = (proc, args) => {
         const scope = new Scope(proc.scope);
         let cur_ps = proc.params, cur_as = args;
         while (pair_p(cur_ps) && pair_p(cur_as)) {
-            scope.define_value(car(cur_ps).imm, car(cur_as));
+            scope.define_value(car(cur_ps), car(cur_as));
             cur_ps = cdr(cur_ps);
             cur_as = cdr(cur_as);
         }
-        assert(!pair_p(cur_ps), "too less arguments");
+        assert(!pair_p(cur_ps), `too less arguments, expected ${proc.params}, given ${args}`);
         if (nil_p(cur_ps)) {
-            assert(nil_p(cur_as), "too many arguments");
+            assert(nil_p(cur_as), `too many arguments, expected ${proc.params}, given ${args}`);
         } else if (symbol_p(cur_ps)) {
-            scope.define_value(cur_ps.imm, cur_as);
+            scope.define_value(cur_ps, cur_as);
         } else {
             assert(false);
         }

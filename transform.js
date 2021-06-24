@@ -5,7 +5,26 @@ const { caseOf } = require("matches");
 const V = require("./value");
 const { nil, tru, fls, cons, car, cdr, set_car, set_cdr } = V;
 
+const uncomment = (() => {
+    const pat = /(;[^\r\n]*[\r\n])/m;
+    return s => s.replace(pat, "");
+})();
+
 const desugar = (() => {
+
+    const pass0 = obj => caseOf(obj, {
+        '["quote", ...]': () => obj,
+        '[...objs]': os => caseOf(os.map(pass0), {
+            '["let", name@String, bindings, ...body]': (name, bindings, body) => {
+                const params = bindings.map(b => b[0]);
+                const args = bindings.map(b => b[1]);
+                return ["letrec", [[name, ["lambda", params, ...body]]], [name, ...args]];
+            },
+            "other": o => o,
+        }),
+        '_': () => obj,
+    })
+
     const pass1 = obj => caseOf(obj, {
         '["quote", ...]': () => obj,
         '[...objs]': os => caseOf(os.map(pass1), {
@@ -53,6 +72,7 @@ const desugar = (() => {
     });
 
     const passes = [
+        pass0,
         pass1,
         pass2,
     ];
@@ -67,7 +87,7 @@ const desugar = (() => {
 
 const js2scm = obj => {
     if (typeof obj === "string" || obj instanceof String) {
-        assert(obj !== ".");
+        assert(obj !== ".", "invalid syntax");
         return new V.Symbol(obj);
     } else if (typeof obj === "boolean" || obj instanceof Boolean) {
         return obj ? tru : fls;
@@ -79,7 +99,7 @@ const js2scm = obj => {
         const len = obj.length;
         for (let i = 0; i < len; ++i) {
             if (obj[i] === ".") {
-                assert(i + 2 === len);
+                assert(i + 2 === len, "invalid syntax");
                 set_cdr(cur, js2scm(obj[++i]));
             } else {
                 cur = set_cdr(cur, cons(js2scm(obj[i]), nil));
@@ -92,6 +112,7 @@ const js2scm = obj => {
 };
 
 module.exports = {
+    uncomment,
     desugar,
     js2scm,
 }
