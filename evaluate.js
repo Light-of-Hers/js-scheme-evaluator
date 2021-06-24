@@ -2,7 +2,7 @@
 
 const { assert } = require("./util");
 const V = require("./value");
-const { nil, tru, fls, untouchable, pair_p, list_p, nil_p, procedure_p, symbol_p, cons, car, cdr, eq, list_map } = V;
+const { vod, nil, tru, fls, untouchable, pair_p, list_p, nil_p, procedure_p, symbol_p, cons, car, cdr, eq, list_map } = V;
 const K = require("./keyword");
 const { Scope } = require("./scope");
 
@@ -27,13 +27,13 @@ const evaluate = (exp, scope) => {
             const val = evaluate(car(cdr(cdr(exp))), scope);
             assert(symbol_p(key), `invalid syntax ${exp}`);
             scope.define_value(key, val);
-            return nil;
+            return vod;
         } else if (eq(fst, K.set_star)) { // set!
             const key = car(cdr(exp));
             const val = evaluate(car(cdr(cdr(exp))), scope)
             assert(symbol_p(key), `invalid syntax ${exp}`);
             scope.set_value(key, val);
-            return nil;
+            return vod;
         } else if (eq(fst, K.begin)) { // begin
             const body = cdr(exp);
             return eval_seq(body, scope);
@@ -50,7 +50,7 @@ const evaluate = (exp, scope) => {
                 }
                 stmts = cdr(stmts);
             }
-            return nil;
+            return vod;
         } else { // apply
             const op = evaluate(fst, scope);
             assert(procedure_p(op), `${op} is not a procedure`);

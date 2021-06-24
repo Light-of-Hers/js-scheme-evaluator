@@ -27,6 +27,12 @@ class Value {
     }
 }
 
+class Void extends Value {
+    toString() {
+        return "#<void>";
+    }
+}
+
 class Nil extends Value {
     toString() {
         return "()";
@@ -128,7 +134,6 @@ class Symbol extends Immediate {
     }
 }
 
-
 class Procedure extends Value { }
 
 class Closure extends Procedure {
@@ -155,11 +160,13 @@ class Primitive extends Procedure {
     }
 }
 
+const vod = new Void;
 const nil = new Nil;
 const tru = new Boolean(true);
 const fls = new Boolean(false);
 const untouchable = new Symbol("[untouchable]");
 
+const void_p = v => v instanceof Void;
 const nil_p = v => v instanceof Nil;
 const pair_p = v => v instanceof Pair;
 const number_p = v => v instanceof Number;
@@ -193,11 +200,13 @@ module.exports = {
     Closure,
     Primitive,
 
+    vod,
     nil,
     tru,
     fls,
     untouchable,
 
+    void_p,
     nil_p,
     pair_p,
     number_p,

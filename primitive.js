@@ -1,7 +1,7 @@
 "use strict";
 
 const V = require("./value");
-const { list_foldl, tru, fls, nil, car, cdr, cons, set_car, set_cdr } = V;
+const { list_foldl, vod, tru, fls, nil, car, cdr, cons, set_car, set_cdr } = V;
 const { apply } = require("./evaluate");
 const { assert } = require("./util");
 const { Scope } = require("./scope");
@@ -42,10 +42,12 @@ const rel_op = op => new V.Primitive(args => {
 const n_args_op = (n, op) => new V.Primitive(args => {
     args = [...args];
     assert(args.length == n, `expected ${n} arguments, given ${args.length}`);
-    return op(...args);
+    const ret = op(...args);
+    return ret ? ret : vod;
 });
 
 const pred_op = op => n_args_op(1, v => op(v) ? tru : fls);
+const cmp_op = op => n_args_op(2, (a, b) => op(a, b) ? tru : fls);
 
 const prims = {
     "+": add_like_op((a, b) => a + b, 0),
@@ -57,18 +59,26 @@ const prims = {
     ">": rel_op((a, b) => a > b),
     "<=": rel_op((a, b) => a <= b),
     ">=": rel_op((a, b) => a >= b),
+    "void?": pred_op(V.void_p),
     "null?": pred_op(V.nil_p),
     "pair?": pred_op(V.pair_p),
     "number?": pred_op(V.number_p),
     "boolean?": pred_op(V.boolean_p),
     "symbol?": pred_op(V.symbol_p),
     "procedure?": pred_op(V.procedure_p),
+    "eq?": cmp_op(V.eq),
+    "eqv?": cmp_op(V.eqv),
+    "equal?": cmp_op(V.equal),
     "cons": n_args_op(2, cons),
     "car": n_args_op(1, car),
     "cdr": n_args_op(1, cdr),
     "set-car!": n_args_op(2, set_car),
     "set-cdr!": n_args_op(2, set_cdr),
     "apply": n_args_op(2, apply),
+    "newline": n_args_op(0, () => console.log()),
+    "display": n_args_op(1, v => { process.stdout.write(String(v)); return vod; }),
+    "displayln": n_args_op(1, v => console.log(String(v))),
+    "void": n_args_op(0, () => vod),
 };
 
 const prim_scope = new Scope(null, new Map(Object.entries(prims)));

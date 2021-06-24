@@ -6,7 +6,7 @@ const V = require("./value");
 const { nil, tru, fls, cons, car, cdr, set_car, set_cdr } = V;
 
 const uncomment = (() => {
-    const pat = /(;[^\r\n]*[\r\n])/m;
+    const pat = /(;[^\r\n]*[\r\n]?)/g;
     return s => s.replace(pat, "");
 })();
 
