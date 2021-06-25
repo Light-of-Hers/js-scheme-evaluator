@@ -2,12 +2,15 @@
 
 const { parse } = require("./parser");
 const { void_p } = require("./value");
-const { uncomment, desugar, js2scm } = require("./transform");
+const { uncomment, desugar, json2scm } = require("./transform");
 const { evaluate } = require("./evaluate");
 const { prim_scope } = require("./primitive");
 const { read_sexp, load_file } = require("./io");
 const { Scope } = require("./scope");
-const { argv } = require("yargs");
+const { argv } = require("yargs")
+    .alias("i", "input")
+    .describe("i", "input file path")
+    .help();
 
 const prompt = "$ ";
 
@@ -18,14 +21,13 @@ const eval_string = s => {
         return null;
     s = parse(s);
     s = desugar(s);
-    s = js2scm(s);
+    s = json2scm(s);
     return evaluate(s, lib_scope);
 }
 eval_string(load_file("lib.scm"));
 
-if (argv.input || argv.i) {
-    const path = argv.input || argv.i;
-    eval_string(load_file(path));
+if (argv.input) {
+    eval_string(load_file(argv.input));
 } else {
     while (true) {
         process.stdout.write(prompt);

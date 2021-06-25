@@ -77,6 +77,11 @@
 (check (cdr '(1 2 3)) '(2 3))
 (newline)
 
+; let/let*
+(check (let ([x 1] [y 2]) (+ x y)) 3)
+(check (let* ([x 1] [y (+ x 1)]) (+ x y)) 3)
+(newline)
+
 ; basic side effect operation
 (let ()
   (set! x '哦!我的孩子!)

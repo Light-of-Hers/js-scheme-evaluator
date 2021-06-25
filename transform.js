@@ -85,7 +85,7 @@ const desugar = (() => {
     };
 })();
 
-const js2scm = obj => {
+const json2scm = obj => {
     if (typeof obj === "string" || obj instanceof String) {
         assert(obj !== ".", "invalid syntax");
         return new V.Symbol(obj);
@@ -100,9 +100,9 @@ const js2scm = obj => {
         for (let i = 0; i < len; ++i) {
             if (obj[i] === ".") {
                 assert(i + 2 === len, "invalid syntax");
-                set_cdr(cur, js2scm(obj[++i]));
+                set_cdr(cur, json2scm(obj[++i]));
             } else {
-                cur = set_cdr(cur, cons(js2scm(obj[i]), nil));
+                cur = set_cdr(cur, cons(json2scm(obj[i]), nil));
             }
         }
         return cdr(dummy);
@@ -114,5 +114,5 @@ const js2scm = obj => {
 module.exports = {
     uncomment,
     desugar,
-    js2scm,
+    json2scm,
 }
