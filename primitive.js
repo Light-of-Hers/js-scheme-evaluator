@@ -59,6 +59,7 @@ const prims = {
     ">": rel_op((a, b) => a > b),
     "<=": rel_op((a, b) => a <= b),
     ">=": rel_op((a, b) => a >= b),
+    "!=": rel_op((a, b) => a !== b),
     "void?": pred_op(V.void_p),
     "null?": pred_op(V.nil_p),
     "pair?": pred_op(V.pair_p),
