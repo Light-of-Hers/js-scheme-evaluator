@@ -1,4 +1,4 @@
-# 用JavaScript写的Scheme解释器
+# 用JavaScript实现的Scheme解释器
 
 陈仁泽 1700012774
 
