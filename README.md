@@ -176,7 +176,9 @@ $ (fact 10)
 
 + `EVAL{(begin ...body) | scope}` := `EVAL*{body | scope}`
 
-+ `EVAL{(if e1 e2 e3) | scope}` := `EVAL{e1 | scope} ? EVAL{e2 | scope} : EVAL{e3 | scope}`
++ `EVAL{(if e1 e2 e3) | scope}` := 
+
+  ​	`EVAL{e1 | scope} ? EVAL{e2 | scope} : EVAL{e3 | scope}`
 
 + `EVAL{(quote e) | scope}` := `x`
 
